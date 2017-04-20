@@ -1,0 +1,23 @@
+#based on OLIFE protocol which included an intermediate MPRAGE (0.8mm). ONM does NOT collect an intermediate MPRAGE.
+
+MPRAGE to MNIflirt –in 11242_MPRAGE_TI100_brain.nii.gz –ref  /import/monstrum/Applications/fsl_4.1.6_64bit/data/standard/MNI152_T1_2mm_brain –omat 11242_MPRAGE_2_MNI.mat –out 11242_MPRAGE_2_MNI.nii.gzADC to MPRAGEflirt -in /import/monstrum/olife/ADC_Data/controls/11242/processed_data/11242_thresholded_ADC.nii.gz -ref /import/monstrum/olife/ADC_Data/controls/11242/11242_MPRAGE_TI1100_brain.nii.gz -omat Trace2MPRAGE.mat -out ADC_2_MPRAGE.nii.gzADC to MNIflirt -in ADC_2_MPRAGE.nii.gz -ref /import/monstrum/Applications/fsl_4.1.6_64bit/data/standard/MNI152_T1_2mm_brain -applyxfm -init 11242_MPRAGE_2_MNI.mat -out ADC_2_MNIBULB to WHOLE BRAIN(0.8mm MPRAGE)flirt -in t2_0.8mm_ipat2_time2_brain.nii.gz -ref mprage_0.8mm_ipat2_brain.nii.gz -omat bulb_to_wholebrain.mat -out bulb_2_wholebrain.nii.gz0.8mm WHOLE BRAIN to MPRAGEflirt -in mprage_0.8mm_ipat2_brain.nii.gz -ref 11242_MPRAGE_TI1100_brain.nii.gz -omat mprage_0.8_to_MPRAGE.mat -out mprage0.8_2_MPRAGE.nii.gzBULB to MPRAGEflirt -in bulb_2_wholebrain.nii.gz -ref 11242_MPRAGE_TI1100_brain.nii.gz -applyxfm -init mprage_0.8_to_MPRAGE.mat -out bulb_to_MPRAGE.nii.gzBULB to MNIflirt -in bulb_to_MPRAGE.nii.gz -ref /import/monstrum/Applications/fsl_4.1.6_64bit/data/standard/MNI152_T1_2mm_brain -applyxfm -init 11242_MPRAGE_2_MNI.mat -out bulb_2_MNI.nii.gz
+
+DRAW BULB ON bulb_2_wholebrain.nii.gz
+
+BULB MASK TO MPRAGE
+flirt -in bulb_mask2.nii.gz -ref 11242_MPRAGE_TI1100_brain.nii.gz -applyxfm -init mprage_0.8_to_MPRAGE.mat -datatype float -out bulb_mask2_to_MPRAGE.nii.gz
+
+THRESHOLD BULB MASK
+fslmaths bulb_mask2_to_MPRAGE.nii.gz -thr 0.5 -bin bulb_mask2_to_MPRAGE_thresh
+
+BULB MASK(MPRAGE) to MNI
+flirt -in bulb_mask2_to_MPRAGE_thresh.nii.gz -ref /import/monstrum/Applications/fsl_4.1.6_64bit/data/standard/MNI152_T1_2mm_brain -applyxfm -init 11242_MPRAGE_2_MNI.mat -datatype float -out bulb_mask2_2_MNI.nii.gz
+
+THRESHOLD BULB MASK
+fslmaths bulb_mask2_2_MNI.nii.gz -thr 0.5 -bin bulb_mask2_to_MNI_thresh
+
+
+
+
+flirt -applyxfm -init <matrix-file> -datatype char -ref <refvol> -interp
+nearestneighbor -in <input-file> -out <output-file>
