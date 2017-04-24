@@ -1,10 +1,16 @@
-for i in /import/monstrum/ONM/subjects/*_????/*t2*BULB*/nifti
+#this script will take each subject's t2 bulb scan and force the orientation to RPI
+
+#for each subject's bulb scanid
+for i in /import/monstrum/ONM/subjects/*_*/*t2*BULB*/nifti
 do
 
+#move into their bulb nifti directory
 cd $i
 
+#for each nifti in this directory
 for j in `ls $i/*.nii.gz`
 do
+
 #get filename so can name RPI file accordingly
 filename=`echo $j | cut -d "/" -f 9 | cut -d "." -f 1`
 filename=`echo $filename"_""RPI"`
