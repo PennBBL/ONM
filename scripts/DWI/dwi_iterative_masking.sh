@@ -1,3 +1,6 @@
+#this script was created mostly by Mark Elliott to go through the ONM DWI images and create masks that iteratively (in 4 steps) add data/image back to the DWI image so that you can do a custom brain extraction for each subject's DWI image without cutting off the olfactory bulbs
+
+#get variables for the ONM subjects directory and the current date
 path=`ls -d /import/monstrum/ONM/subjects`
 day=`date +%m_%d_%y`
 
@@ -7,25 +10,37 @@ for i in `ls -d "$path"/*_*`; do
 #get scanid
 subject=`echo $i | cut -d "/" -f 6 | cut -d "_" -f 2`
 
+#print the scanid to the screen
 echo $subject
 
 #for every subject in every dwi map folder....
 #Note: some of these folders are called dwi_ADC_map, some are called ADC_ADC. 
 for j in `ls -d "$i"/*ADC_[Am][Da][Cp]/nifti`; do
+
+#create a variable for the adc nifti image
 test_map=`ls $j/*ADC_[Am][Da][Cp]*.nii.gz`
+
+#print the path and adc nifti image to the screen
 echo $j
 echo $test_map
+
+#create a variable with the last mask to be created so can check if it exists before running the script
 test_out=`ls $j/mask4.nii.gz`
 
-#check if there is already a mask4 file, if there is don't do anything. If there isn't, then bet .3 threshold and create a rescaled file 
+#check if there is a adc nifti image, and there is no mask4 output image.
 if [ "X$test_map" != "X" ] && [ "X$test_out" == "X" ];then
+
+#if those conditions are met then bet the adc image at a .3 threshold and create a rescaled file 
 bet $test_map "$j"/00"$subject"_brain_0.3 -f 0.3 -g 0 -m
 fslmaths $test_map -div 1000000 "$j"/00"$subject"_ADC_rescaled.nii.gz
 
+#create a variable that gets this bet adc image you just created
 input_mask=`ls $j/"00"$subject"_brain_0.3.nii.gz"`  
 
+#print out this image path to the screen
 echo $input_mask
 
+#move into the subject's DWI directory
 cd $j
 
 #the following scripts are from Mark Elliott to create iterative masks (four of them) for the DWI data, each mask adds a bit more data back to the .3 bet file
