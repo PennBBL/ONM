@@ -4,9 +4,6 @@
 #this step gets the qa results
 /import/monstrum/ONM/scripts/DTI/get_qa_results.sh
 
-#this step uploads DTI data to RedCap
-#/import/monstrum/ONM/scripts/DTI/upload_DTI_data_to_redcap.py
-
 #this step submits bedpostx
 /import/monstrum/ONM/scripts/DTI/bedpostx_submit.sh
 
@@ -24,7 +21,6 @@
 
 #register adc and bulb (bulb mask must be drawn first)
 #/import/monstrum/ONM/scripts/DWI/adc_registration.sh
-
 
 
 #4_freesurfer_processing_pipeline.sh
