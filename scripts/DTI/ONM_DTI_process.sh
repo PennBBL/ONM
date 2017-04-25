@@ -1,3 +1,5 @@
+#this script is run by the wrapper ONM_DTI_pipeline.sh and will process each subject given by the wrapper script's DTI data
+
 #######add logs
 logfile=""
 logrun(){
@@ -10,28 +12,35 @@ printf "exit code: $ec\n" #|tee -a $logfile
 #[ ! $ec -eq 0 ] && printf "\nError running $exe; exit code: $ec; aborting.\n" |tee -a $logfile && exit 1
 }
 
-#input is the subject ID from the loop script
-
+#create a variable for the subject list given by the wrapper script
 subjlist=$1
+
+#create variables for subj, scanid, the path to the ONM subject directory, DTI directory and raw nifti image, and various files needed for processing
 subj=$(cat $subjlist|sed -n "${SGE_TASK_ID}p")  #only use for array jobs, comment out for non-grid testing
 scanid=`echo $subj |cut -d '_' -f2`;
 path=/import/monstrum/ONM/subjects/
 dtidir=`ls -d $path$subj/*DTI* | cut -d "/" -f 7`
 dti_image=`ls $path$subj/$dtidir/bbl/raw_dti/*DTI*.nii.gz`
+
+#these text files are created by DRR for ONM DTI and do not change between ONM subjects
 acqparams=/import/monstrum/ONM/scripts/DTI/acqparams.txt
 indexfile=/import/monstrum/ONM/scripts/DTI/index.txt
+
+#these are the subject specific bvec and bval files
 bvecs=`ls $path$subj/$dtidir/bbl/raw_dti/*DTI*.bvec`
 bvals=`ls $path$subj/$dtidir/bbl/raw_dti/*DTI*.bval`
+
+#this is the error output file, a variable with the date, and the log file output for each subject
 process_fail=/import/monstrum/ONM/scripts/DTI/dti_process_fail.csv
 date=`date +%Y-%m-%d`
 logfile=$path$subj/$dtidir/bbl/$scanid"_logfile_process_"$date".log"
 
+#print to the screen the subject id you are processing
 echo "....................Processing subject "$subj
 
-#Make DTI coverage mask for each subject by backtransforming FSL's FMRIB58 DTI mask to native space
 
-#Register single b=0 dwi image to FMRIB58 DTI FA map
-		
+#Make DTI coverage mask for each subject by backtransforming FSL's FMRIB58 DTI mask to native space
+#Register single b=0 dwi image to FMRIB58 DTI FA map		
 		if [ -e $path$subj/$dtidir/bbl/qa/*DTI*b0mean.nii ] ; then
 		echo "move b=0 image to standard space"
 		logrun flirt -dof 6 -in $path$subj/$dtidir/bbl/qa/*DTI*b0mean.nii -ref /import/monstrum/Applications/fsl5/data/standard/FMRIB58_FA_1mm.nii.gz -out $path$subj/$dtidir/bbl/raw_dti/$scanid"_dwi_n_standard_space.nii.gz" -omat $path$subj/$dtidir/bbl/raw_dti/$scanid"_dwi_n_standard_space.mat"
