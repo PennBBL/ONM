@@ -1,26 +1,35 @@
+#this script takes all freesurfer rois and converts the labels to volumes for each subject, then it takes each ONM 7t subject and each 7T roi and extracts glucest (see DRR for details on this script)
+
 #Need to be in /import/monstrum/ONM/freesurfer/subjects to run this script
 #Set Subjects directory to ONM:
 SUBJECTS_DIR=/import/monstrum/ONM/group_results/freesurfer/subjects
 source /import/monstrum/Applications/freesurfer/SetUpFreeSurfer.sh
 
+#for each ONM subject
 for i in "$SUBJECTS_DIR"/*_*
 do
+
+#create a variable with their subject id and print that to the screen
 subid=`basename $i`;
 echo " Processing subject "$subid
 
-#check if ROI folder is present or else make one
+#create variables for the ROIs directory and ROI_volumes directory in each subject's freesurfer group results directory 
 roisfolder=$(ls -d "$i"/ROIs)
 volfolder=$(ls -d "$i"/ROI_volumes)
 
+#check if ROI volume folder is present or else make one
 if [ ! -d "$volfolder" ]; then
 	echo "ROI_volumes folder does not exist..creating folder for this subject"
 	mkdir "$i"/ROI_volumes;
 
+#for each label file in the ROIs folder
 for j in `ls -d $roisfolder/*.label`
 do
 
+#print that label file to the screen
 echo $j
 
+#create variables for the hemisphere and ROI name for that label file
 hemi=`echo $j | cut -d "/" -f 10 | cut -d "." -f 1`
 ROI=`echo $j | cut -d "/" -f 10 | cut -d "." -f 2`
 
@@ -44,7 +53,10 @@ done
 
 #Extract GluCEST
 
+#for each ONM 7T subject
 for s in /import/monstrum/ONM/7T/subjects/*_*; do
+	
+	#get variables for the subject id and 7t scanid for each subject
 	subjid=`echo $s |cut -d '/' -f7 | cut -d "_" -f1`;
 	echo $subjid
 	sevent_scanid=`echo $s |cut -d '/' -f7 | cut -d "_" -f2`
@@ -54,11 +66,12 @@ for s in /import/monstrum/ONM/7T/subjects/*_*; do
 mkdir /import/monstrum/ONM/7T/subjects/$subjid"_"$sevent_scanid/7T_ROIs/all_fs_ROIs/
 cp /import/monstrum/ONM/group_results/freesurfer/subjects/$subjid"_"*/ROI_volumes/*RPI.nii.gz /import/monstrum/ONM/7T/subjects/$subjid"_"*/7T_ROIs/all_fs_ROIs/
 
+#make a processed GluCEST ROIs directory
 #mkdir /import/monstrum/ONM/7T/subjects/$subjid"_"$sevent_scanid/GluCEST
 #mkdir /import/monstrum/ONM/7T/subjects/$subjid"_"$sevent_scanid/GluCEST/mOFC/
 mkdir /import/monstrum/ONM/7T/subjects/$subjid"_"$sevent_scanid/GluCEST/mOFC/processed_GluCEST_ROIs
 
-
+#create a variable which gets the B0B1CESTmap for that subject
 #glucest_mOFC=/import/monstrum/ONM/7T/subjects/$subjid"_"*/GluCEST/mOFC/S0994_CESTMAP/*.nii
 glucest_mOFC=/import/monstrum/ONM/7T/subjects/$subjid"_"$sevent_scanid/GluCEST/mOFC/B0B1CESTmap.nii
 

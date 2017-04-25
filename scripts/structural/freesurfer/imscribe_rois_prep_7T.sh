@@ -1,18 +1,24 @@
+#this script prepares the necessary ROIs (and all freesurfer ROIs) for 7T registration using freesurfer output
 
+#Need to be in /import/monstrum/ONM/freesurfer/subjects to run this script
 #Set Subjects directory to ONM:
 SUBJECTS_DIR=/import/monstrum/ONM/group_results/freesurfer/subjects
+
 #Check that Subjects directory was set:
 source /import/monstrum/Applications/freesurfer/SetUpFreeSurfer.sh
 
+#for each ONM subject with processed freesurfer data
 for i in "$SUBJECTS_DIR"/*_*
 do
-subid=`basename $i`;
 
+#create a variable with the subject id and print that to the screen
+subid=`basename $i`;
 echo " Processing subject "$subid
 
-#check if ROI folder is present or else make one
+#create a variable which gets the ROI directory for output
 roisfolder=$(ls -d "$i"/ROIs)
 
+#check if ROI folder is present or else make one, also make a 7T_prep directory
 if [ ! -d "$roisfolder" ]; then
 	echo "ROIs folder does not exist..creating folder for this subject"
 	mkdir "$i"/ROIs;
@@ -87,19 +93,4 @@ echo "Finished processing subject " $subid"...."
 
 fi
 
-#do the same for all freesurfer ROIs
-roisfolder=$(ls -d "$i"/7T_prep/all_fs_rois)
-
-if [ ! -d "$roisfolder" ]; then
-	echo "all fs rois folder does not exist..creating folder for this subject"
-	mkdir "$i"/7T_prep/all_fs_rois;
-fi
-
-for j in `ls -d $i/ROIs/*`;
-do
-
-mri_label2vol --label $j --temp "$i"/mri/rawavg.mgz --subject $subid --hemi rh --o "$i"/ROIs/"$subid"_rh_entorhinal.nii.gz --proj frac 0 1 .1 --fillthresh .3 --reg "$i"/mri/register.dat;
-mri_label2vol --label $j --temp "$i"/mri/rawavg.mgz --subject $subid --hemi lh --o "$i"/ROIs/"$subid"_lh_entorhinal.nii.gz --proj frac 0 1 .1 --fillthresh .3 --reg "$i"/mri/register.dat;
-
-done
 done

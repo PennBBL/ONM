@@ -1,18 +1,24 @@
+#this script prepares the necessary ROIs for 7T registration using freesurfer output, it does so only for the left hemisphere
+
 #Need to be in /import/monstrum/ONM/freesurfer/subjects to run this script
 #Set Subjects directory to ONM:
 SUBJECTS_DIR=/import/monstrum/ONM/group_results/freesurfer/subjects
-#SUBJECTS_DIR=/import/monstrum/tmp/freesurfer
+
 #Check that Subjects directory was set:
 source /import/monstrum/Applications/freesurfer/SetUpFreeSurfer.sh
 
-for i in "$SUBJECTS_DIR"/*_????
+#for each ONM subject with processed freesurfer data
+for i in "$SUBJECTS_DIR"/*_*
 do
+
+#create a variable with the subject id and print that to the screen
 subid=`basename $i`;
 echo " Processing subject "$subid
 
-#check if ROI folder is present or else make one
+#create a variable which gets the ROI directory for output
 roisfolder=$(ls -d "$i"/ROIs)
 
+#check if ROI folder is present or else make one, also make a 7T_prep directory
 if [ ! -d "$roisfolder" ]; then
 	echo "ROIs folder does not exist..creating folder for this subject"
 	mkdir "$i"/ROIs;
