@@ -15,26 +15,34 @@
 # then compute outliers across subjects for number of ROIs flagged.
 
 
-# full directory to subject list bblid_scanid
+#create a variable for the bblid_scanid list to be processed. You need to update this before running.
 slist=/import/monstrum/ONM/redcap/subject_variables/bblid_scanid.csv
+
+#set freesurfer specific envrionment variables
 export SUBJECTS_DIR=/import/monstrum/ONM/group_results/freesurfer/subjects
 export QA_TOOLS=/import/monstrum/Applications/freesurfer/QAtools_v1.1
 export FREESURFER_HOME=/import/monstrum/Applications/freesurfer.old/
 export PATH=$FREESURFER_HOME/bin/:$PATH
 
-# create subcortical segment volumes
+
+#if the group results freesurfer aseg.stats directory doesn't exist then make it
 if [ ! -e "$SUBJECTS_DIR/../stats/aseg.stats" ]; then
 	mkdir -p $SUBJECTS_DIR/../stats/aseg.stats
 fi
+
+#run asegstats2table to put each subject's aseg stats volumes into an aggregate output file
 asegstats2table --subjectsfile=$slist -t $SUBJECTS_DIR/../stats/aseg.stats/aseg.stats.volume.csv -m volume --skip
 
-# create parcelation tables
+#if the group results freesurfer aparc.stats directory doesn't exist then make it
 if [ ! -e "$SUBJECTS_DIR/../stats/aparc.stats" ]; then
 	mkdir -p $SUBJECTS_DIR/../stats/aparc.stats
 fi
+
+
 # code to create mean QA data charts. thickness and surface area charts.
 /import/monstrum/ONM/scripts/structural/freesurfer/qa/aparc.stats.meanthickness.totalarea.sh $slist $SUBJECTS_DIR
 
+#run aparcstats2table for each hemisphere and measure type (thickness and volume) to output this data into aggregate output files
 aparcstats2table --hemi lh --subjectsfile=$slist -t $SUBJECTS_DIR/../stats/aparc.stats/lh.aparc.stats.thickness.csv -m thickness --skip
 aparcstats2table --hemi rh --subjectsfile=$slist -t $SUBJECTS_DIR/../stats/aparc.stats/rh.aparc.stats.thickness.csv -m thickness --skip
 aparcstats2table --hemi lh --subjectsfile=$slist -t $SUBJECTS_DIR/../stats/aparc.stats/lh.aparc.stats.volume.csv -m volume --skip
