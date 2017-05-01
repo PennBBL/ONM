@@ -1,0 +1,72 @@
+#This script is the processing pipeline to run for any new ONM 3T subject that has been checked into xnat and downloaded to monstrum using the download script (/import/monstrum/ONM/scripts/download/download_v2.0.sh). It is to be run after FreeSurfer has finished running, DTI processing has been finished running, and DWI mask is chosen and mask list.txt is filled out
+
+
+###DTI 
+
+#this step gets the qa results
+/import/monstrum/ONM/scripts/DTI/get_qa_results.sh
+
+#this step submits bedpostx
+/import/monstrum/ONM/scripts/DTI/bedpostx_submit.sh
+
+#this step runs TBSS
+/import/monstrum/ONM/scripts/DTI/tbss_run.sh
+
+###FREESURFER
+
+#symlink
+
+echo "....................Creating symlink"
+/import/monstrum/ONM/scripts/structural/freesurfer/symlink_setup.sh
+
+#extract sulcal depth
+
+echo "....................Extract sulc depth"
+/import/monstrum/ONM/scripts/structural/freesurfer/extract_sulc_depth.sh
+
+#extract cortical thickness
+
+echo "....................Extract cortical thickness"
+/import/monstrum/ONM/scripts/structural/freesurfer/extract_cortial_thickness_sulc_label.sh
+
+#extract stats entorhinal
+
+echo "....................Extract entorhinal"
+/import/monstrum/ONM/scripts/structural/freesurfer/extract_stats_entorhinal.sh
+
+#imscribe script for 7T prep
+
+echo "....................Imscribe 7T prep"
+/import/monstrum/ONM/scripts/structural/freesurfer/imscribe_rois_prep_7T.sh
+
+#extraction of rois script
+
+echo "....................Extraction of ROI stats"
+/import/monstrum/ONM/scripts/structural/freesurfer/extract_stats.sh
+
+
+#Run QA script
+
+echo ".................Running QA"
+
+rm -rf /import/monstrum/ONM/redcap/subject_variables/bblid_scanid.csv
+
+for i in `ls -d /import/monstrum/ONM/subjects/*`; do 
+
+subid=`echo $i | cut -d "/" -f 6`
+
+echo $subid >> /import/monstrum/ONM/redcap/subject_variables/bblid_scanid.csv
+
+done
+
+/import/monstrum/ONM/scripts/structural/freesurfer/qa/QA.sh
+
+
+
+###DWI 
+
+
+
+
+
+
